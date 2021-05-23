@@ -1,8 +1,18 @@
 module Animals exposing (AllKnownAnimals, addNewKnownAnimal, initAllKnownAnimals, lookupRealAnimal)
 
 import Dict exposing (Dict)
-import RefinementProofs.Knowledge exposing (A, NoDomainKnowledge, NoNamedKnowledge, NoValueKnowledge, WithKnowledge, axiomaticallySetDomainKnowledge, forget, setNamedKnowledge, withName, withNoKnowledge)
-import RefinementProofs.Proofs.DictProofs exposing (IsInDict, proveKeyIsInDict, takeValueFromDict)
+import RefinementProofs.Knowledge exposing ( A
+    , NoDomainKnowledge
+    , NoNamedKnowledge
+    , NoValueKnowledge
+    , WithKnowledge
+    , axiomaticallySetDomainKnowledge
+    , forget
+    , setNamedKnowledge
+    , withName
+    , withNoKnowledge
+    )
+import RefinementProofs.Proofs.DictProofs exposing (IsInDict, proveKeyIsInDict)
 import RefinementProofs.Proofs.NumberProofs exposing (Positive, provePositive)
 
 
