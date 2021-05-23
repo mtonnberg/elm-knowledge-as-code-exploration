@@ -26,7 +26,7 @@ type AllKnownAnimals
 
 initAllKnownAnimals : WithKnowledge (Dict Int String) NoValueKnowledge AllKnownAnimals NoNamedKnowledge
 initAllKnownAnimals =
-    axiomaticallySetDomainKnowledge AllKnownAnimals <| withNoKnowledge <| Dict.fromList [ ( 1, "Wombat" ), ( 2, "Unicorn" ), ( -1, "Imaginary horse" ) ]
+    axiomaticallySetDomainKnowledge AllKnownAnimals <| withNoKnowledge <| Dict.fromList [ ( 1, "Wombat" ), ( 2, "Horse" ), ( -1, "Unicorn" ) ]
 
 
 addNewKnownAnimal :
