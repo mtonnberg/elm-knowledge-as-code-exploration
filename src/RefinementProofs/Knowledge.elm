@@ -3,7 +3,9 @@ module RefinementProofs.Knowledge exposing
     , And, Or, Not, XOr, Implies
     , or, and, not
     , forgetNamedKnowledgeAndName
+    , d_makeOr
     , name2WithKnowledge
+    , k_d_makeOr
     , forget, imply
     , A, NoDomainKnowledge, NoNamedKnowledge, NoValueKnowledge, Proof, andIsFlippable, attachNamedKnowledge, axiomaticDomainKnowledge, axiomaticNamedKnowledge, axiomaticValueKnowledge, axiomaticallyAddDomainKnowledge, axiomaticallySetDomainKnowledge, d_modusPonens, d_since, detachNamedKnowledge, forgetNamedKnowledge, makeProof, n_elimAndL, n_elimAndR, n_introOrL, n_introOrR, n_inverse, n_makeAnd, n_makeOr, n_modusPonens, n_modusTollens, n_since, n_sinceNot, name, name2, raw, setNamedKnowledge, the, v_elimAndL, v_elimAndR, v_introAnd, v_introOrL, v_introOrR, v_inverse, v_makeAnd, v_makeOr, v_modusPonens, v_modusTollens, v_since, v_sinceNot, withName, withNoKnowledge
     )
@@ -57,6 +59,10 @@ module RefinementProofs.Knowledge exposing
 The usage of `namedKnowledge` allows us to capture the knowledge on how different values interact. For example if a value is known to be in a dictionary
 
 To get more information about named knowledge check name, A, makeProof, attachNamedKnowledge
+
+#### TODO
+- Implement all logical operations for all types of knowledge (```introOr```, ```makeAnd``` etc)
+- Change all logical operations to work on ```WithKnowledge a``` instead of ```a```
 
 -}
 type WithKnowledge value valueKnowledge domainKnowledge namedKnowledge
@@ -553,6 +559,46 @@ d_since : Implies d1 d2 -> WithKnowledge a v d1 p -> WithKnowledge a v d2 p
 d_since =
     d_modusPonens
 
+
+
+{-| For value knowledge. A convience method to check two proofs for Or
+-}
+d_makeOr : (a -> Maybe (WithKnowledge a v d1 b)) -> (a -> Maybe (WithKnowledge a v d2 b)) -> a -> Maybe (WithKnowledge a v (Or d1 d2) b)
+d_makeOr f g x =
+    case ( f x, g x ) of
+        ( Just _, _ ) ->
+            Just <| axiomInternal x
+
+        ( _, Just _ ) ->
+            Just <| axiomInternal x
+
+        _ ->
+            Nothing
+
+
+
+
+{-| TODO make all makeOr, makeAnd elimAndL etc to work on WithKnowledge instead of a. That way we 
+-- do not need as many functions, and most times we will probably have a WithKnowledge anyway.
+-}
+k_d_makeOr : ((WithKnowledge a v d b) -> Maybe (WithKnowledge a vr d1b br)) ->
+    ((WithKnowledge a v d b) -> Maybe (WithKnowledge a vr d2b br)) ->
+    (WithKnowledge a v d b) ->
+    Maybe (WithKnowledge a vr (Or d1b d2b) br)
+k_d_makeOr f g x =
+    case ( f x, g x ) of
+        ( Just _, _ ) ->
+            Just <| axiomInternal <| forget x
+
+        ( _, Just _ ) ->
+            Just <| axiomInternal <|  forget x
+
+        _ ->
+            Nothing
+--
+    -- WithKnowledge (A (Dict Int String) animals) anyDictDomainKnowledge AllKnownAnimals anyDictNamedKnowledge
+    -- -> WithKnowledge (A Int animalId) (Or Positive Zero) NoDomainKnowledge (IsInDict animalId animals)
+    -- -> Maybe (WithKnowledge (A Int animalId) (Or Positive Zero) IsAValidCuteAnimal NoNamedKnowledge)
 
 {-| And is always flippable
 -}

@@ -9,6 +9,7 @@ module RefinementProofs.Proofs.NumberProofs exposing
     , proveNegative
     , proveOdd
     , provePositive
+    , proveZero
     , proveZeroOrGreater
     , allPositivesAreZeroOrGreater
     )

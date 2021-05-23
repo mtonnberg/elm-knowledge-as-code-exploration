@@ -2,17 +2,22 @@ module CuteAnimals exposing (IsAValidCuteAnimal, proveCuteness)
 
 import Animals exposing (AllKnownAnimals)
 import Dict exposing (Dict)
-import RefinementProofs.Knowledge exposing ( A
-    , NoDomainKnowledge
-    , NoNamedKnowledge
-    , WithKnowledge
-    , axiomaticallySetDomainKnowledge
-    , forget
-    , forgetNamedKnowledge
-    , raw
-    )
+import RefinementProofs.Knowledge
+    exposing
+        ( A
+        , NoDomainKnowledge
+        , NoNamedKnowledge
+        , Or
+        , WithKnowledge
+        , axiomaticallySetDomainKnowledge
+        , detachNamedKnowledge
+        , forget
+        , forgetNamedKnowledge
+        , raw
+        , setNamedKnowledge
+        )
 import RefinementProofs.Proofs.DictProofs exposing (IsInDict, takeValueFromDict)
-import RefinementProofs.Proofs.NumberProofs exposing (Positive)
+import RefinementProofs.Proofs.NumberProofs exposing (Positive, Zero)
 
 
 type IsAValidCuteAnimal
@@ -21,8 +26,8 @@ type IsAValidCuteAnimal
 
 proveCuteness :
     WithKnowledge (A (Dict Int String) animals) anyDictDomainKnowledge AllKnownAnimals anyDictNamedKnowledge
-    -> WithKnowledge (A Int animalId) Positive NoDomainKnowledge (IsInDict animalId animals)
-    -> Maybe (WithKnowledge (A Int animalId) Positive IsAValidCuteAnimal NoNamedKnowledge)
+    -> WithKnowledge (A Int animalId) (Or Positive Zero) NoDomainKnowledge (IsInDict animalId animals)
+    -> Maybe (WithKnowledge (A Int animalId) (Or Positive Zero) IsAValidCuteAnimal NoNamedKnowledge)
 proveCuteness allAnimals animalId =
     let
         animalCommonName =
