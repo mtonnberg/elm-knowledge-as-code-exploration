@@ -579,7 +579,7 @@ d_makeOr f g x =
 
 
 {-| TODO make all makeOr, makeAnd elimAndL etc to work on WithKnowledge instead of a. That way we 
--- do not need as many functions, and most times we will probably have a WithKnowledge anyway.
+-- do not need as many functions, and most times we will probably have a WithKnowledge anyway. And it easy to go to a WithKnowledge with ```withNoKnowledge```
 -}
 k_d_makeOr : ((WithKnowledge a v d b) -> Maybe (WithKnowledge a vr d1b br)) ->
     ((WithKnowledge a v d b) -> Maybe (WithKnowledge a vr d2b br)) ->
