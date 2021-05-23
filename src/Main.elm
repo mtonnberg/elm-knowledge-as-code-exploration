@@ -7,7 +7,7 @@ import Dict exposing (Dict)
 import Html exposing (Html, button, pre, text)
 import Html.Events exposing (onClick)
 import Http
-import RefinementProofs.Knowledge exposing (A, NoDomainKnowledge, NoNamedKnowledge, NoValueKnowledge, Proof, WithKnowledge, axiomaticallySetDomainKnowledge, forget, forgetNamedKnowledge, forgetNamedKnowledgeAndName, name, name2, name2WithKnowledge, raw, setNamedKnowledge, withName, withNoKnowledge)
+import RefinementProofs.Knowledge exposing (A, NoDomainKnowledge, NoNamedKnowledge, NoValueKnowledge, Proof, WithKnowledge, forget, forgetNamedKnowledge, forgetNamedKnowledgeAndName, name, name2, name2WithKnowledge, raw, setNamedKnowledge, withName, withNoKnowledge)
 import RefinementProofs.Proofs.DictProofs exposing (IsInDict, proveKeyIsInDict, takeValueFromDict)
 import RefinementProofs.Proofs.NumberProofs exposing (Positive, provePositive)
 import RefinementProofs.Knowledge exposing (Or)
