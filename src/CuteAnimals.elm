@@ -5,7 +5,6 @@ import Dict exposing (Dict)
 import RefinementProofs.Knowledge exposing ( A
     , NoDomainKnowledge
     , NoNamedKnowledge
-    , NoValueKnowledge
     , WithKnowledge
     , axiomaticallySetDomainKnowledge
     , forget
@@ -21,7 +20,7 @@ type IsAValidCuteAnimal
 
 
 proveCuteness :
-    WithKnowledge (A (Dict Int String) animals) NoValueKnowledge AllKnownAnimals NoNamedKnowledge
+    WithKnowledge (A (Dict Int String) animals) anyDictDomainKnowledge AllKnownAnimals anyDictNamedKnowledge
     -> WithKnowledge (A Int animalId) Positive NoDomainKnowledge (IsInDict animalId animals)
     -> Maybe (WithKnowledge (A Int animalId) Positive IsAValidCuteAnimal NoNamedKnowledge)
 proveCuteness allAnimals animalId =
