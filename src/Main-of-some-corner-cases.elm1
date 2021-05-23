@@ -1,0 +1,221 @@
+module Main exposing (main)
+
+import Browser
+import Dict exposing (Dict)
+import Html exposing (Html, pre, text)
+import Http
+import RefinementProofs.Knowledge exposing (A, NoDomainKnowledge, NoNamedKnowledge, NoValueKnowledge, Proof, WithKnowledge, axiomaticallySetDomainKnowledge, forget, forgetNamedKnowledge, forgetNamedKnowledgeAndName, name, name2, name2WithKnowledge, raw, setNamedKnowledge, withName, withNoKnowledge)
+import RefinementProofs.Proofs.DictProofs exposing (IsInDict, proveKeyIsInDict)
+import RefinementProofs.Proofs.NumberProofs exposing (Positive, provePositive)
+import RefinementProofs.Proofs.StringProofs exposing (NonEmptyString, proveNonEmptyString)
+import Html exposing (button)
+import Html.Events exposing (onClick)
+
+
+
+-- MAIN
+
+
+main =
+    Browser.element
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
+
+
+
+-- MODEL
+
+
+type LoadState
+    = Failure
+    | Loading
+    | Success String
+
+
+type IsAValidCuteAnimal
+    = IsAValidCuteAnimal
+
+
+type AllKnownCuteAnimals
+    = AllKnownCuteAnimals
+
+
+type alias Model =
+    { externalText : LoadState
+    , name : WithKnowledge String NonEmptyString NoDomainKnowledge NoNamedKnowledge
+    , cuteAnimals : WithKnowledge (Dict Int String) NoValueKnowledge AllKnownCuteAnimals NoNamedKnowledge
+
+    -- it is possible to have NoValueKnowledge here and then have an implication that all Int ValidCuteAnimals is positive
+    , selectedAnimalId : Maybe (WithKnowledge Int Positive IsAValidCuteAnimal NoNamedKnowledge)
+    }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    let
+        n =
+            case proveNonEmptyString "asd" of
+                Nothing ->
+                    Debug.todo "absurd"
+
+                Just x ->
+                    x
+    in
+    ( { externalText = Success "sometext"
+      , name = n
+      , cuteAnimals = axiomaticallySetDomainKnowledge AllKnownCuteAnimals <| withNoKnowledge <| Dict.fromList [ ( 1, "Wombat" ), ( 2, "Unicorn" ) ]
+      , selectedAnimalId = Nothing
+      }
+        , Cmd.none
+    -- , Http.get
+    --     { url = "https://elm-lang.org/assets/public-opinion.txt"
+    --     , expect = Http.expectString GotText
+    --     }
+    )
+
+
+
+-- UPDATE
+
+
+type Msg
+    = GotText (Result Http.Error String)
+    | SetCuteAnimal Int
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        GotText result ->
+            case result of
+                Ok fullText ->
+                    ( { model | externalText = Success fullText }, Cmd.none )
+
+                Err _ ->
+                    ( { model | externalText = Failure }, Cmd.none )
+
+        SetCuteAnimal i ->
+            ( { model
+                | selectedAnimalId =
+                    Maybe.map forgetNamedKnowledgeAndName <| name2WithKnowledge (withNoKnowledge i) model.cuteAnimals handleSetCuteAnimal
+              }
+            , Cmd.none
+            )
+
+
+handleSetCuteAnimal :
+    WithKnowledge (A Int animalId) NoValueKnowledge NoDomainKnowledge NoNamedKnowledge
+    -> WithKnowledge (A (Dict Int String) cuteAnimals) NoValueKnowledge AllKnownCuteAnimals NoNamedKnowledge
+    -> Maybe (WithKnowledge (A Int animalId) Positive IsAValidCuteAnimal NoNamedKnowledge)
+handleSetCuteAnimal namedId namedDict =
+    Maybe.map (forgetNamedKnowledge << toIsCuteAnimalDomainKnowledge namedDict) <|
+        lookupCuteAnimal namedId <|
+            forget namedDict
+
+
+lookupCuteAnimal :
+    WithKnowledge (A Int animalId) NoValueKnowledge NoDomainKnowledge NoNamedKnowledge
+    -> A (Dict Int String) cuteAnimals
+    -> Maybe (WithKnowledge (A Int animalId) Positive NoDomainKnowledge (IsInDict animalId cuteAnimals))
+lookupCuteAnimal namedWantedKey namedDict =
+    case ( proveKeyIsInDict (forget namedWantedKey) namedDict, withName provePositive (forget namedWantedKey) ) of
+        ( Just isInDictProof, Just isPositive ) ->
+            let
+                keyWithAllNeededProofs : WithKnowledge (A Int animalId) Positive NoDomainKnowledge (IsInDict animalId cuteAnimals)
+                keyWithAllNeededProofs =
+                    setNamedKnowledge isInDictProof isPositive
+            in
+            Just keyWithAllNeededProofs
+
+        _ ->
+            Nothing
+
+
+toIsCuteAnimalDomainKnowledge :
+    WithKnowledge (A (Dict Int String) cuteAnimals) NoValueKnowledge AllKnownCuteAnimals NoNamedKnowledge
+    -> WithKnowledge (A Int animalId) Positive NoDomainKnowledge (IsInDict animalId cuteAnimals)
+    -- -> WithKnowledge (A Int selectedAnimalId) Positive IsAValidCuteAnimal NoNamedKnowledge -- This will not compile
+    -> WithKnowledge (A Int animalId) Positive IsAValidCuteAnimal NoNamedKnowledge
+toIsCuteAnimalDomainKnowledge _ animalId =
+    let
+        foo : A Int intruder -> WithKnowledge (A Int animalId) Positive IsAValidCuteAnimal NoNamedKnowledge
+        -- foo : A Int intruder -> WithKnowledge (A Int fooName) Positive IsAValidCuteAnimal NoNamedKnowledge -- This will not compile
+        -- foo : A Int intruder -> WithKnowledge (A Int intruder) Positive IsAValidCuteAnimal NoNamedKnowledge -- This will not compile
+        foo namedx =
+            axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| forgetNamedKnowledge animalId
+
+        -- axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| withNoKnowledge namedx
+    in
+    name 3 foo
+
+
+
+---- Works fine
+-- toIsCuteAnimalDomainKnowledge :
+--     A Int animalId
+--     -> WithKnowledge (A (Dict Int String) cuteAnimals) NoValueKnowledge AllKnownCuteAnimals NoNamedKnowledge
+--     -> Proof (IsInDict animalId cuteAnimals)
+--     -> WithKnowledge (A Int selectedAnimalId) NoValueKnowledge IsAValidCuteAnimal NoNamedKnowledge
+-- toIsCuteAnimalDomainKnowledge animalId _ r =
+--     let
+--       foo : A Int intruder -> WithKnowledge (A Int selectedAnimalId) NoValueKnowledge IsAValidCuteAnimal NoNamedKnowledge
+--       foo namedx =
+--         -- axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| withNoKnowledge animalId
+--         axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| withNoKnowledge namedx
+--         -- Debug.todo "af"
+--     in
+--     name 3 foo
+--     -- (\namedx ->
+--     --   Debug.todo "af"
+--     --   -- axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| withNoKnowledge namedx
+--     --   -- axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| forgetNamedKnowledge r
+--     -- )
+-- Does not work, we do not get any errors that animalId and selectedAnimalId is the same and therfore can return any named values
+-- Example of a creeping bug, note that we have introduced the selectedAnimalId that should be animalId
+-- toIsCuteAnimalDomainKnowledge :
+--     A Int animalId
+--     -> WithKnowledge (A (Dict Int String) cuteAnimals) NoValueKnowledge AllKnownCuteAnimals NoNamedKnowledge
+--     -> WithKnowledge (A Int selectedAnimalId) NoValueKnowledge NoDomainKnowledge (IsInDict animalId cuteAnimals)
+--     -> WithKnowledge (A Int selectedAnimalId) NoValueKnowledge IsAValidCuteAnimal NoNamedKnowledge
+-- toIsCuteAnimalDomainKnowledge _ _ r =
+--     axiomaticallySetDomainKnowledge IsAValidCuteAnimal <| forgetNamedKnowledge r
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+    case model.externalText of
+        Failure ->
+            text "I was unable to load your book."
+
+        Loading ->
+            text "Loading..."
+
+        Success fullText ->
+            pre []
+                [ text "current animal\n"
+                , text <| Debug.toString model.selectedAnimalId
+                , text "\n"
+                , button
+                    [ onClick (SetCuteAnimal (-1))
+                    ]
+                    [ text "set animal to -1" ]
+                , text "\n"
+                , button [ onClick (SetCuteAnimal 1) ] [ text "set animal to 1" ]
+                , text "\n"
+                , button [ onClick (SetCuteAnimal 4) ] [ text "set animal to 4" ]
+                , text "\n"
+                , text fullText
+                ]
