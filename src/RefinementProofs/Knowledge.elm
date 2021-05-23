@@ -49,7 +49,7 @@ module RefinementProofs.Knowledge exposing
 
   - The constructors for all captured knowledge must _**never**_ be exported! That is constructors akin to `Positive` or `NonEmpty`. _**It is not unlikely that you will add your own types for captured knowledge (perhaps `IsOneOfMyFavoriteAnimals`), when you do - keep the constructors hidden, keep constructors safe**_
   - Do not use a lambda for the function input to _**`name`**_. It must be a function with an _**explicit function signature**_!
-  - Make sure that _**all names**_ are correct and _**unique**_ (excluding NamedKnowledge and per function signature), that will probably _**break**_ the type safety. There are a couple of safety mechanisms but do not count on them.
+  - Make sure that _**all names**_ are correct and _**unique**_ (excluding NamedKnowledge, the return value and per function signature), that will probably _**break**_ the type safety. There are a couple of safety mechanisms but do not count on them.
 
 
 #### More info
